@@ -1,0 +1,37 @@
+{
+  "name": "gharmony-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@floating-ui/react": "^0.26.28",
+    "@headlessui/react": "^2.2.0",
+    "axios": "^1.7.9",
+    "formik": "^2.4.6",
+    "framer-motion": "^11.18.2",
+    "next": "^15.3.2",
+    "next-intl": "^4.9.2",
+    "pitchy": "^4.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tone": "^15.1.22",
+    "yup": "^1.6.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.3.2",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.3"
+  }
+}

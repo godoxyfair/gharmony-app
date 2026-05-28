@@ -1,0 +1,28 @@
+@reference "tailwindcss";
+
+.button {
+  @apply inline-flex items-center justify-center;
+  @apply rounded-full;
+  background-color: transparent;
+  color: var(--color-fg);
+  transition:
+    opacity var(--duration-micro) var(--ease-expo),
+    background-color var(--duration-micro) var(--ease-expo);
+
+  &:hover:not(:disabled) {
+    background-color: rgba(245, 241, 234, 0.08);
+  }
+
+  &:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+.small  { @apply w-8 h-8; }
+.normal { @apply w-10 h-10; }
+.large  { @apply w-12 h-12; }

@@ -1,0 +1,15 @@
+.wrap {
+  width: 100%;
+  overflow: hidden;
+  transition: height 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 4px;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+}
+
+.scrollable {
+  cursor: ew-resize;
+}

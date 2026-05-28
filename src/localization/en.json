@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "GHarmony",
+    "description": "Music is the prompt."
+  },
+  "landing": {
+    "tagline": "Music is the prompt.",
+    "cta": "Begin"
+  },
+  "hum": {
+    "title": "Hum",
+    "record": "Record",
+    "stop": "Stop",
+    "play": "Play",
+    "clear": "Clear"
+  },
+  "world": {
+    "title": "World",
+    "back": "Back to Hum",
+    "save": "Save World"
+  },
+  "common": {
+    "loading": "Loading",
+    "error": "Something went wrong"
+  }
+}

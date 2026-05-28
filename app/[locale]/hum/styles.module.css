@@ -1,0 +1,32 @@
+@reference "tailwindcss";
+
+.page {
+  @apply flex items-center justify-center;
+  @apply min-h-dvh;
+  position: relative;
+}
+
+.hint {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  opacity: 0;
+  animation: fadeIn 600ms 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    animation: none;
+    opacity: 1;
+  }
+}

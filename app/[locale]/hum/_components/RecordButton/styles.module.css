@@ -1,0 +1,128 @@
+@reference "tailwindcss";
+
+@property --shimmer-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shimmer-spin {
+  to { --shimmer-angle: 360deg; }
+}
+
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.waves {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.btn {
+  position: relative;
+  z-index: 1;
+  width: 288px;
+  height: 288px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 150ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* static border ring */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(245, 241, 234, 0.2);
+    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* shimmer ring — visible on hover */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from var(--shimmer-angle),
+      #c4a35a 0%,
+      #d4b896 18%,
+      #b8a0d8 36%,
+      #8ec4c4 54%,
+      #c4a35a 72%,
+      #d4b896 90%,
+      #c4a35a 100%
+    );
+    -webkit-mask:
+      radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1.5px));
+    mask:
+      radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1.5px));
+    opacity: 0;
+    transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover:not(:disabled) {
+    &::after { opacity: 0; }
+    &::before {
+      opacity: 1;
+      animation: shimmer-spin 2.4s linear infinite;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 6px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.recording {
+  color: var(--color-accent);
+
+  &::after {
+    border-color: var(--color-accent);
+    opacity: 0.7;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+}
+
+.denied {
+  position: absolute;
+  top: calc(100% + 2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover:not(:disabled)::before {
+    animation: none;
+  }
+}

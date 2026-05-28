@@ -1,0 +1,21 @@
+@reference "tailwindcss";
+
+.root {
+  @apply flex flex-col items-center justify-center;
+  @apply min-h-dvh px-8 text-center;
+}
+
+.title {
+  @apply font-normal leading-none tracking-tight;
+  font-family: var(--font-serif);
+  font-size: clamp(4rem, 12vw, 9rem);
+  color: var(--color-fg);
+  margin-bottom: 1.5rem;
+}
+
+.tagline {
+  @apply text-lg;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}

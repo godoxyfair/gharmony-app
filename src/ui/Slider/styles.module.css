@@ -1,0 +1,43 @@
+@reference "tailwindcss";
+
+.wrapper {
+  @apply flex items-center gap-3 w-full;
+}
+
+.label {
+  @apply text-xs uppercase;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  min-width: 3rem;
+}
+
+.track {
+  @apply relative flex-1;
+  height: 2px;
+  background-color: var(--color-border);
+  border-radius: 1px;
+}
+
+.fill {
+  @apply absolute left-0 top-0 h-full pointer-events-none;
+  background-color: var(--color-accent);
+  border-radius: 1px;
+  transition: width 0ms;
+}
+
+.input {
+  @apply absolute cursor-pointer;
+  inset: -8px 0;
+  width: 100%;
+  height: calc(100% + 16px);
+  opacity: 0;
+  appearance: none;
+}
+
+.value {
+  @apply text-xs text-right;
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  min-width: 2.5rem;
+}

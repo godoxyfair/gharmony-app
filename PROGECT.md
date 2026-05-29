@@ -2,7 +2,7 @@
 
 ## Context
 
-This is a portfolio demo project built to apply for a **Design Engineer** role at **vvd** (vvd.studio), a startup making tools for storytellers, worldbuilders, and writers. Their philosophy: use AI to **empower** human creativity, not replace it. They specifically dislike "AI slop" generators.
+This is a portfolio demo project built to apply for a startup making tools for storytellers, worldbuilders, and writers. Their philosophy: use AI to **empower** human creativity, not replace it. They specifically dislike "AI slop" generators.
 
 The applicant is a vocalist and guitarist, so the project leans into music as the creative input. The goal is to ship a polished, working demo that demonstrates: end-to-end ownership, design taste, motion/polish, real frontend craft, and thoughtful use of AI.
 

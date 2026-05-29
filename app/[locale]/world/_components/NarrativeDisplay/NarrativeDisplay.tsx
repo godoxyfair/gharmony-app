@@ -92,7 +92,7 @@ export function NarrativeDisplay() {
   if (!displayed) return null
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} aria-live="polite" aria-atomic="false">
       <p className={styles.text}>{displayed}</p>
     </div>
   )

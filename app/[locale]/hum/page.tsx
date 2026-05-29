@@ -7,7 +7,6 @@ export default function HumPage() {
     <main className={styles.page}>
       <WorldCube />
       <HumView />
-      <p className={styles.hint}>hum to begin</p>
     </main>
   )
 }

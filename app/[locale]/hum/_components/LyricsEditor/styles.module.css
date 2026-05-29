@@ -31,7 +31,7 @@
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 3rem;
-  padding: 40px 20px 20px;
+  padding: 52px 20px 20px;
   border: 1px solid transparent;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -50,7 +50,7 @@
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 3rem;
-  padding: 40px 20px 20px;
+  padding: 52px 20px 20px;
 
   background: color-mix(in srgb, var(--color-fg) 3%, transparent);
   color: var(--color-fg);

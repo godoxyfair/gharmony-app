@@ -37,6 +37,8 @@ export function HumView() {
   const humRecorderRef = useRef<MediaRecorder | null>(null)
   const humChunksRef = useRef<Blob[]>([])
   const isRecordingRef = useRef(false)
+  const recordBtnRef = useRef<HTMLButtonElement>(null)
+  const handlePlayRef = useRef<() => void>(() => {})
 
   const { bpm, tap: tapBpm, set: setBpm } = useTapTempo(120)
   const bpmRef = useRef(bpm)
@@ -94,16 +96,33 @@ export function HumView() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (isRecordingRef.current) return
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+
+      if (isRecordingRef.current) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          recordBtnRef.current?.click()
+        }
+        return
+      }
+
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault()
         tapBpm()
+      } else if (e.key === ' ') {
+        e.preventDefault()
+        handlePlayRef.current()
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault()
+        recordBtnRef.current?.click()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        stopPlayback()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [tapBpm])
+  }, [tapBpm, stopPlayback])
 
   const handleRecordStart = useCallback(async (stream: MediaStream, ctx: AudioContext) => {
     stopPlayback()
@@ -197,14 +216,20 @@ export function HumView() {
     }
   }, [quantized, chords, isPlaying, bpm, play, stopPlayback])
 
+  useEffect(() => { handlePlayRef.current = handlePlay }, [handlePlay])
+
   const hasChords = chords !== null && chords.length > 0 && !isRecording
 
   return (
     <div className={styles.wrap}>
       <RecordButton
+        ref={recordBtnRef}
         onRecordStart={handleRecordStart}
         onRecordStop={handleRecordStop}
       />
+      {!detectedKey && !isRecording && (
+        <p className={styles.hint}>hum to begin</p>
+      )}
       {detectedKey !== null && (
         <KeyBadge result={detectedKey} onOverride={handleKeyOverride} />
       )}

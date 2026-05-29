@@ -59,31 +59,34 @@ export function ExportPanel({ notes, chords, bpm, style, isPlaying, onStopPlayba
   }
 
   return (
-    <div className={styles.panel} role="group" aria-label="Export">
-      <button
-        className={styles.btn}
-        onClick={handleMidi}
-        disabled={rendering}
-        aria-label="Download MIDI file"
-      >
-        midi
-      </button>
-      <button
-        className={styles.btn}
-        onClick={handleWav}
-        disabled={rendering}
-        aria-label="Download WAV audio"
-      >
-        {rendering ? 'rendering…' : 'wav'}
-      </button>
-      <button
-        className={styles.btn}
-        onClick={handleChordSheet}
-        disabled={rendering}
-        aria-label="Download chord sheet"
-      >
-        chords
-      </button>
+    <div className={styles.wrap} role="group" aria-label="Export">
+      <span className={styles.label}>export</span>
+      <div className={styles.panel}>
+        <button
+          className={styles.btn}
+          onClick={handleMidi}
+          disabled={rendering}
+          aria-label="Download MIDI file"
+        >
+          midi
+        </button>
+        <button
+          className={styles.btn}
+          onClick={handleWav}
+          disabled={rendering}
+          aria-label="Download WAV audio"
+        >
+          {rendering ? 'rendering…' : 'wav'}
+        </button>
+        <button
+          className={styles.btn}
+          onClick={handleChordSheet}
+          disabled={rendering}
+          aria-label="Download chord sheet"
+        >
+          chords
+        </button>
+      </div>
     </div>
   )
 }

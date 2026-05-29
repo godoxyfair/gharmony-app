@@ -68,16 +68,29 @@ export function LyricsEditor({ chords, keyResult, onChordsChange }: Props) {
     const container = containerRef.current
     if (!mirror || !container) return
     const containerRect = container.getBoundingClientRect()
-    const positions: MarkerPos[] = []
+    const raw: MarkerPos[] = []
     mirror.querySelectorAll<HTMLSpanElement>('[data-marker]').forEach(span => {
       const idx = parseInt(span.getAttribute('data-marker') ?? '0', 10)
       const rect = span.getBoundingClientRect()
-      positions.push({
+      raw.push({
         x: rect.left - containerRect.left,
         y: rect.top - containerRect.top,
         chordIdx: idx,
       })
     })
+
+    // Prevent overlap: sort by x, shift badges that are too close together
+    const MIN_GAP = 54
+    raw.sort((a, b) => a.x - b.x)
+    const positions: MarkerPos[] = []
+    for (const pos of raw) {
+      const prev = positions[positions.length - 1]
+      const x = prev && Math.abs(pos.y - prev.y) < 10 && pos.x - prev.x < MIN_GAP
+        ? prev.x + MIN_GAP
+        : pos.x
+      positions.push({ ...pos, x })
+    }
+
     setMarkerPositions(positions)
   }, [])
 
@@ -150,7 +163,7 @@ export function LyricsEditor({ chords, keyResult, onChordsChange }: Props) {
             <div
               key={pos.chordIdx}
               className={styles.markerWrapper}
-              style={{ left: pos.x, top: pos.y - 26 }}
+              style={{ left: pos.x, top: pos.y - 36 }}
             >
               <button
                 className={`${styles.chordMarker} ${activePopover === pos.chordIdx ? styles.markerActive : ''}`}

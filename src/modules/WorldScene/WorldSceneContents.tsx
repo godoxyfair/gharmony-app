@@ -37,7 +37,7 @@ const frag = /* glsl */`
   }
 `
 
-function AnimatedCube() {
+function AnimatedCube({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const matRef = useRef<THREE.ShaderMaterial>(null)
   const lastBeatRef = useRef(-1)
   const beatPulseRef = useRef(0)
@@ -51,12 +51,15 @@ function AnimatedCube() {
 
   useFrame(({ clock }) => {
     if (!matRef.current) return
-    const t = clock.elapsedTime
-    matRef.current.uniforms.uTime.value = t
 
-    const hue = (t * 0.04) % 1
-    matRef.current.uniforms.uColorA.value.setHSL(hue, 0.9, 0.55)
-    matRef.current.uniforms.uColorB.value.setHSL((hue + 0.5) % 1, 0.9, 0.55)
+    if (!reducedMotion) {
+      const t = clock.elapsedTime
+      matRef.current.uniforms.uTime.value = t
+
+      const hue = (t * 0.04) % 1
+      matRef.current.uniforms.uColorA.value.setHSL(hue, 0.9, 0.55)
+      matRef.current.uniforms.uColorB.value.setHSL((hue + 0.5) % 1, 0.9, 0.55)
+    }
 
     const beatTick = useStore.getState().beatTick
     if (beatTick !== lastBeatRef.current) {
@@ -89,14 +92,15 @@ function AnimatedCube() {
 interface Props {
   autoRotate?: boolean
   accentColor?: string
+  reducedMotion?: boolean
 }
 
-export function WorldSceneContents({ autoRotate = false }: Props) {
+export function WorldSceneContents({ autoRotate = false, reducedMotion = false }: Props) {
   return (
     <>
-      <AnimatedCube />
+      <AnimatedCube reducedMotion={reducedMotion} />
       <OrbitControls
-        autoRotate={autoRotate}
+        autoRotate={autoRotate && !reducedMotion}
         autoRotateSpeed={1.4}
         enableZoom={false}
         enablePan={false}

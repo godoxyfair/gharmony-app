@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, forwardRef } from 'react'
 import { useAudioContext } from '@/src/hooks/use-audio-context'
 import { useMicrophoneStream } from '@/src/hooks/use-microphone-stream'
 import { cn } from '@/src/utils/helpers'
@@ -13,7 +13,7 @@ type Props = {
   onRecordStop?: () => void
 }
 
-export function RecordButton({ onRecordStart, onRecordStop }: Props) {
+export const RecordButton = forwardRef<HTMLButtonElement, Props>(function RecordButton({ onRecordStart, onRecordStop }: Props, ref) {
   const { getContext } = useAudioContext()
   const { status, start, stop } = useMicrophoneStream()
 
@@ -133,6 +133,7 @@ export function RecordButton({ onRecordStart, onRecordStop }: Props) {
       </svg>
 
       <button
+        ref={ref}
         className={cn(styles.btn, isRecording && styles.recording)}
         onClick={handleClick}
         disabled={isRequesting}
@@ -153,7 +154,7 @@ export function RecordButton({ onRecordStart, onRecordStop }: Props) {
       )}
     </div>
   )
-}
+})
 
 function MicIcon() {
   return (

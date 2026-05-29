@@ -15,7 +15,6 @@ node_modules/
 .env.test
 
 # Project docs (not for repo)
-CLAUDE.md
 ARCHITECTURE.md
 
 # Vercel

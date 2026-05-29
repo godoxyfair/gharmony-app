@@ -1,2 +1,2 @@
-export { playA as play, stopA as stop } from './playback-a'
-export type { StyleName } from './playback-a'
+export { playA as play, stopA as stop, setSynthMuted, setVoiceMuted, setHumMuted, clearVoiceBuffer, clearHumBuffer, setPianoMuted, ensureLivePiano, livePianoNoteOn, livePianoNoteOff } from './playback-a'
+export type { StyleName, MidiNote } from './playback-a'

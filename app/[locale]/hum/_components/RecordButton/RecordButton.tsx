@@ -6,7 +6,7 @@ import { useMicrophoneStream } from '@/src/hooks/use-microphone-stream'
 import { cn } from '@/src/utils/helpers'
 import styles from './styles.module.css'
 
-const WAVE_RADII = [168, 210, 265] as const
+const WAVE_RADII = [84, 105, 132] as const
 
 type Props = {
   onRecordStart?: (stream: MediaStream, ctx: AudioContext) => void
@@ -114,15 +114,15 @@ export function RecordButton({ onRecordStart, onRecordStop }: Props) {
     <div className={styles.wrap}>
       <svg
         className={styles.waves}
-        viewBox="0 0 800 800"
+        viewBox="0 0 400 400"
         aria-hidden="true"
       >
         {WAVE_RADII.map((r, i) => (
           <circle
             key={i}
             ref={el => { waveRefs.current[i] = el }}
-            cx="400"
-            cy="400"
+            cx="200"
+            cy="200"
             r={r}
             fill="none"
             stroke="var(--color-accent)"
@@ -157,7 +157,7 @@ export function RecordButton({ onRecordStart, onRecordStop }: Props) {
 
 function MicIcon() {
   return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="9" y="2" width="6" height="12" rx="3" />
       <path d="M5 10a7 7 0 0 0 14 0" />
       <line x1="12" y1="19" x2="12" y2="22" />
@@ -168,7 +168,7 @@ function MicIcon() {
 
 function StopIcon() {
   return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <rect x="6" y="6" width="12" height="12" rx="1.5" />
     </svg>
   )

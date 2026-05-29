@@ -3,15 +3,10 @@
 import { useEffect, useRef } from 'react'
 import { freqToMidi } from '@/lib/music/notes'
 import type { RawDetection, QuantizedNote } from '@/lib/music/notes'
+import type { MidiNote } from '@/lib/audio/playback'
 import styles from './styles.module.css'
 
-// Visible MIDI range: C3 (48) → C6 (84) — full vocal range
-const MIDI_MIN = 48
-const MIDI_MAX = 84
-const MIDI_RANGE = MIDI_MAX - MIDI_MIN
-
-const ROW_H = 10
-const CANVAS_H = MIDI_RANGE * ROW_H
+const CANVAS_H = 360
 const PX_PER_SEC = 120
 const PLAYHEAD_X = 0.25
 
@@ -20,22 +15,19 @@ const COLOR_GRID = 'rgba(255,255,255,0.05)'
 const COLOR_OCTAVE = 'rgba(255,255,255,0.12)'
 const COLOR_BG = '#0e0d0c'
 
-function midiToY(midi: number): number {
-  return (MIDI_MAX - midi) * ROW_H
-}
-
 type Props = {
   detections: RawDetection[]
   quantized: QuantizedNote[] | null
   isRecording: boolean
   bpm?: number
   accentColor?: string
+  humBuffer?: AudioBuffer | null
+  midiTrack?: MidiNote[] | null
 }
 
-export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accentColor }: Props) {
+export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accentColor, humBuffer, midiTrack }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
-  // left edge of viewport in seconds when not recording; reset to 0 on each new recording
   const scrollSecRef = useRef(0)
 
   const detectionsRef = useRef(detections)
@@ -43,18 +35,39 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
   const isRecordingRef = useRef(isRecording)
   const bpmRef = useRef(bpm)
   const accentRef = useRef(accentColor ?? DEFAULT_ACCENT)
+  const humPeaksRef = useRef<Float32Array | null>(null)
+  const midiTrackRef = useRef(midiTrack ?? null)
 
   useEffect(() => { detectionsRef.current = detections }, [detections])
   useEffect(() => { quantizedRef.current = quantized }, [quantized])
   useEffect(() => { isRecordingRef.current = isRecording }, [isRecording])
   useEffect(() => { bpmRef.current = bpm }, [bpm])
   useEffect(() => { accentRef.current = accentColor ?? DEFAULT_ACCENT }, [accentColor])
+  useEffect(() => { midiTrackRef.current = midiTrack ?? null }, [midiTrack])
+
+  useEffect(() => {
+    if (!humBuffer) { humPeaksRef.current = null; return }
+    const data = humBuffer.getChannelData(0)
+    const numPeaks = Math.ceil(humBuffer.duration * PX_PER_SEC)
+    const peaks = new Float32Array(numPeaks)
+    const samplesPerPeak = humBuffer.sampleRate / PX_PER_SEC
+    for (let i = 0; i < numPeaks; i++) {
+      const s0 = Math.floor(i * samplesPerPeak)
+      const s1 = Math.min(Math.floor((i + 1) * samplesPerPeak), data.length)
+      let peak = 0
+      for (let s = s0; s < s1; s++) {
+        const v = Math.abs(data[s])
+        if (v > peak) peak = v
+      }
+      peaks[i] = peak
+    }
+    humPeaksRef.current = peaks
+  }, [humBuffer])
 
   useEffect(() => {
     if (isRecording) scrollSecRef.current = 0
   }, [isRecording])
 
-  // ResizeObserver so canvas pixel size stays correct if layout shifts after mount
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -75,7 +88,6 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
     return () => ro.disconnect()
   }, [])
 
-  // Horizontal wheel scroll when not recording
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -99,11 +111,26 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
     function draw() {
       const dets = detectionsRef.current
       const quant = quantizedRef.current
+      const midiNotes = midiTrackRef.current
       const recording = isRecordingRef.current
       const currentBpm = bpmRef.current
 
       const W = canvas!.width / (window.devicePixelRatio || 1)
       const H = CANVAS_H
+
+      // Compute MIDI range from actual note content; fall back to vocal range
+      const allMidis: number[] = []
+      if (quant && quant.length > 0) {
+        for (const n of quant) allMidis.push(n.midi)
+      }
+      if (midiNotes && midiNotes.length > 0) {
+        for (const n of midiNotes) allMidis.push(n.note)
+      }
+      const effMin = allMidis.length > 0 ? Math.max(0, Math.min(...allMidis) - 4) : 48
+      const effMax = allMidis.length > 0 ? Math.min(127, Math.max(...allMidis) + 4) : 84
+      const effRange = Math.max(effMax - effMin, 1)
+      const rowH = H / effRange
+      const toY = (m: number) => (effMax - m) * rowH
 
       let leftSec: number
       let showPlayhead = false
@@ -113,7 +140,6 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
         leftSec = lastTime + 0.05 - (PLAYHEAD_X * W) / PX_PER_SEC
         showPlayhead = true
       } else {
-        // static view: scroll from t=0 by default, wheel adjusts scrollSecRef
         leftSec = scrollSecRef.current
       }
 
@@ -124,8 +150,8 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
       ctx2d.fillRect(0, 0, W, H)
 
       // Semitone & octave grid lines
-      for (let midi = MIDI_MIN; midi <= MIDI_MAX; midi++) {
-        const y = midiToY(midi)
+      for (let midi = effMin; midi <= effMax; midi++) {
+        const y = toY(midi)
         ctx2d.strokeStyle = midi % 12 === 0 ? COLOR_OCTAVE : COLOR_GRID
         ctx2d.lineWidth = midi % 12 === 0 ? 1 : 0.5
         ctx2d.beginPath()
@@ -153,21 +179,21 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
           if (note.startTime > rightSec) continue
           const x = (note.startTime - leftSec) * PX_PER_SEC
           const w = note.duration * PX_PER_SEC
-          const y = midiToY(note.midi)
+          const y = toY(note.midi)
           ctx2d.globalAlpha = 0.5 + note.clarity * 0.5
           ctx2d.fillStyle = accentRef.current
           ctx2d.beginPath()
-          ctx2d.roundRect(x + 1, y + 1, w - 2, ROW_H - 2, 3)
+          ctx2d.roundRect(x + 1, y + 1, w - 2, rowH - 2, 3)
           ctx2d.fill()
           ctx2d.globalAlpha = 1
         }
       } else {
         for (const d of dets) {
           if (d.time < leftSec || d.time > rightSec) continue
-          const midi = freqToMidi(d.freq)
-          if (midi < MIDI_MIN || midi > MIDI_MAX) continue
+          const m = freqToMidi(d.freq)
+          if (m < effMin || m > effMax) continue
           const x = (d.time - leftSec) * PX_PER_SEC
-          const y = midiToY(midi) + ROW_H / 2
+          const y = toY(m) + rowH / 2
           const r = 3 + d.clarity * 3
           ctx2d.globalAlpha = 0.4 + d.clarity * 0.6
           ctx2d.fillStyle = accentRef.current
@@ -176,6 +202,42 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
           ctx2d.fill()
           ctx2d.globalAlpha = 1
         }
+      }
+
+      if (midiNotes && midiNotes.length > 0) {
+        const bd = 60 / currentBpm
+        for (const note of midiNotes) {
+          const startSec = note.beat * bd
+          const durSec = note.duration * bd
+          if (startSec + durSec < leftSec || startSec > rightSec) continue
+          const x = (startSec - leftSec) * PX_PER_SEC
+          const w = Math.max(durSec * PX_PER_SEC, 4)
+          const y = toY(note.note)
+          ctx2d.globalAlpha = 0.85
+          ctx2d.fillStyle = accentRef.current
+          ctx2d.beginPath()
+          ctx2d.roundRect(x + 1, y + 2, w - 2, rowH - 4, 2)
+          ctx2d.fill()
+          ctx2d.globalAlpha = 0.4
+          ctx2d.strokeStyle = accentRef.current
+          ctx2d.lineWidth = 1
+          ctx2d.stroke()
+          ctx2d.globalAlpha = 1
+        }
+      }
+
+      const humPeaks = humPeaksRef.current
+      if (humPeaks) {
+        ctx2d.fillStyle = accentRef.current
+        ctx2d.globalAlpha = 0.28
+        for (let x = 0; x < W; x++) {
+          const t = x / PX_PER_SEC + leftSec
+          const pi = Math.floor(t * PX_PER_SEC)
+          if (pi < 0 || pi >= humPeaks.length) continue
+          const barH = Math.max(1, humPeaks[pi] * H * 0.45)
+          ctx2d.fillRect(x, H / 2 - barH, 1, barH * 2)
+        }
+        ctx2d.globalAlpha = 1
       }
 
       if (showPlayhead) {
@@ -196,7 +258,7 @@ export function PianoRoll({ detections, quantized, isRecording, bpm = 120, accen
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isVisible = detections.length > 0 || quantized !== null || isRecording
+  const isVisible = detections.length > 0 || quantized !== null || isRecording || (midiTrack != null && midiTrack.length > 0)
 
   return (
     <div

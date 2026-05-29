@@ -299,6 +299,29 @@ Quick-start library of common progressions. User picks a template instead of sin
 
 ---
 
+### Feature 9.5 — Voice overdub track
+**Depends on:** 07.
+
+A voice recording layer on top of the synthesized backing track. User records their voice while the synth plays, then both tracks play together with independent mute controls.
+
+**Scope:**
+- `useVoiceRecorder` hook — `MediaRecorder` captures mic audio, decodes into `AudioBuffer` via Tone.js AudioContext for guaranteed sync
+- Synth routing: all synths route through `Tone.Destination`. Mute via `Tone.getDestination().mute`
+- Voice routing: `Tone.Player` → `Tone.Volume` → raw `AudioContext.destination` (bypasses Tone.Destination for independent muting)
+- `player.sync().start(0)` — perfect sync with `Tone.Transport`; voice starts exactly when transport starts
+- Track panel (shown after chords exist): two rows — Synth row (M mute button, stylized indicator) + Voice row (M mute, record button, waveform canvas)
+- Waveform canvas: live animated bars during recording (AnalyserNode RAF loop); static peaks after recording (downsampled `AudioBuffer.getChannelData(0)`)
+- Voice buffer and mute state stored in Zustand — persists across style changes and progression edits
+- Pressing "record voice" auto-starts synth playback if not already playing
+
+**Done when:**
+- User can record voice, hear it play back in sync with synth
+- Muting either track silences only that track
+- Waveform animates live during recording, shows static shape after
+- Re-recording replaces the previous voice take
+
+---
+
 ### Feature 10 — Tap tempo
 **Depends on:** 07.
 
@@ -341,6 +364,29 @@ User draws their own drum pattern. Replaces preset selection for users who want 
 - Drawing a pattern and pressing play produces exactly that drum pattern
 - Switching between preset and custom does not lose the custom pattern
 - Grid is readable at a glance — 16 cells fit in the UI without horizontal scroll on 1280px viewport
+
+---
+
+### Feature 11.5 — Virtual Launchpad (on-screen MIDI keyboard)
+**Depends on:** 07.
+
+On-screen 8×8 chromatic note grid styled after Novation Launchpad. User plays notes live; with recording enabled, notes are captured into a looping MIDI piano track layered over the existing arrangement.
+
+**Scope:**
+- `LaunchpadGrid` component — 8×8 button grid, chromatic layout (C2–D#7), black-key visual distinction, C-note markers
+- Touch/pointer events with `setPointerCapture` for fluid sliding across pads
+- **Live playback:** pressing a pad triggers immediate `PolySynth` (triangle wave, pluck-like ADSR) via a `Volume` bus independent of `Tone.getDestination()` — unaffected by synth global mute
+- **Recording mode:** "rec" button toggles recording; while recording + playing, each note-on/off is timestamped relative to the loop position (`Transport.seconds * bpm / 60 % loopLengthBeats`) and stored as `{ note, beat, duration }` in Zustand `midiTrack[]`
+- **Recorded-note overlay:** pads that appear in `midiTrack` show an accent-tinted border/background; recording mode adds a pulsing red frame around the whole grid
+- **Loop playback:** `midiTrack` is passed to `playA` alongside `customDrum`; a `Tone.Part` schedules note events for each bar of the loop on a separate `pianoBus → rawContext.destination` chain
+- **Mute / clear:** M button mutes both live and scheduled piano buses; "clear" removes all recorded notes; state persists in Zustand across style changes
+- `loopLengthBeats` stored in Zustand, set by `usePlayback.play()` so the hook can compute beat-within-loop without prop drilling
+
+**Done when:**
+- Pressing pads produces sound immediately with no perceptible latency
+- Notes recorded in rec+play mode loop back on next iteration alongside chords and drums
+- Recorded notes are visually marked on the grid; recording state is clearly indicated
+- Mute silences only the piano layer, not drums or chords
 
 ---
 
@@ -508,7 +554,7 @@ Tie Hum and World together. The flow from melody → world should feel cinematic
 ### Feature 18 — Save & share
 **Depends on:** 16, 17.
 
-The user wants to keep what they made. This also gives vvd a viral mechanism to think about.
+The user wants to keep what they made. This also gives a viral mechanism to think about.
 
 **Scope:**
 - "Save world" button in World mode
@@ -526,7 +572,7 @@ The user wants to keep what they made. This also gives vvd a viral mechanism to 
 ### Feature 19 — Accessibility & polish pass
 **Depends on:** everything else, done last.
 
-The make-or-break pass. The vvd job posting explicitly lists accessibility as a plus.
+The make-or-break pass
 
 **Scope:**
 - Every interactive element has a visible focus state (custom, not browser default)
